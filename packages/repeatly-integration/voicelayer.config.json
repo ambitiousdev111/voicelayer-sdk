@@ -1,0 +1,49 @@
+{
+  "$schema": "../../schema/voicelayer.config.schema.json",
+  "appName": "Repeatly",
+  "appDescription": "Tiffin / meal subscription delivery app for Indian users",
+  "stt": {
+    "provider": "webspeech",
+    "languages": ["hi-IN", "en-IN", "en-US"]
+  },
+  "tts": {
+    "provider": "webspeech",
+    "language": "hi-IN"
+  },
+  "ui": {
+    "position": "bottom-right",
+    "hotkey": "Alt+KeyV",
+    "theme": {
+      "primary": "#2E7D32",
+      "background": "#1B2A1B",
+      "text": "#E8F5E9"
+    }
+  },
+  "routes": [
+    { "path": "/",           "name": "Home",          "description": "Landing page with subscription plans" },
+    { "path": "/login",      "name": "Login",         "description": "OTP-based phone login" },
+    { "path": "/dashboard",  "name": "Dashboard",     "description": "User's active subscriptions and meal schedule" },
+    { "path": "/menu",       "name": "Menu",          "description": "Browse tiffin / meal options" },
+    { "path": "/cart",       "name": "Cart",          "description": "Current order cart" },
+    { "path": "/orders",     "name": "Order History", "description": "Past orders and reorder" },
+    { "path": "/profile",    "name": "Profile",       "description": "Account settings and address" },
+    { "path": "/wallet",     "name": "Wallet",        "description": "Wallet balance and transaction history" }
+  ],
+  "intentHints": [
+    {
+      "phrases": ["आज का खाना", "today's meal", "aaj ka khana"],
+      "action": "NAVIGATE",
+      "target": "/menu"
+    },
+    {
+      "phrases": ["मेरा wallet", "wallet balance", "kitna paisa hai"],
+      "action": "NAVIGATE",
+      "target": "/wallet"
+    },
+    {
+      "phrases": ["order karo", "subscribe karo", "plan lo"],
+      "action": "NAVIGATE",
+      "target": "/menu"
+    }
+  ]
+}

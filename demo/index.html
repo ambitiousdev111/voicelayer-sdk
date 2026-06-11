@@ -1,0 +1,1018 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Repeatly — VoiceLayer Demo</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --brand:   #6C47FF;
+      --brand-d: #5535DD;
+      --bg:      #0D0D1A;
+      --surface: #16163A;
+      --surface2:#1E1E42;
+      --border:  rgba(108,71,255,.18);
+      --text:    #E0E0F0;
+      --muted:   #7070A0;
+      --green:   #00B899;
+      --red:     #E53935;
+      --orange:  #FF6B35;
+      --sidebar-w: 220px;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      font-size: 14px;
+    }
+
+    /* ── Sidebar ──────────────────────────────────────────────────────── */
+    #sidebar {
+      width: var(--sidebar-w);
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      position: fixed;
+      top: 0; left: 0; bottom: 0;
+      z-index: 200;
+      transition: transform 0.2s ease;
+    }
+    .sidebar-logo {
+      padding: 20px 20px 16px;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--brand);
+      border-bottom: 1px solid var(--border);
+      letter-spacing: -0.5px;
+    }
+    .sidebar-logo span { color: var(--text); font-weight: 300; }
+    nav[role="navigation"] { flex: 1; padding: 12px 0; }
+    nav[role="navigation"] a {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 20px;
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 14px;
+      transition: color 0.15s, background 0.15s;
+      border-left: 3px solid transparent;
+    }
+    nav[role="navigation"] a:hover { color: var(--text); background: rgba(108,71,255,.08); }
+    nav[role="navigation"] a.active {
+      color: var(--text);
+      background: rgba(108,71,255,.12);
+      border-left-color: var(--brand);
+    }
+    nav[role="navigation"] a .icon { font-size: 16px; width: 20px; text-align: center; }
+    .sidebar-footer {
+      padding: 16px 20px;
+      border-top: 1px solid var(--border);
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .sidebar-footer kbd {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 2px 6px;
+      font-size: 11px;
+      font-family: monospace;
+    }
+
+    /* ── Hamburger (mobile) ────────────────────────────────────────────── */
+    #hamburger-btn {
+      display: none;
+      position: fixed;
+      top: 14px; left: 14px;
+      z-index: 300;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 10px;
+      cursor: pointer;
+      color: var(--text);
+      font-size: 18px;
+    }
+    #mobile-menu-backdrop {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.5);
+      z-index: 190;
+    }
+
+    /* ── Main content ──────────────────────────────────────────────────── */
+    #main {
+      margin-left: var(--sidebar-w);
+      flex: 1;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Top bar ───────────────────────────────────────────────────────── */
+    #topbar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    #topbar h1 { font-size: 18px; font-weight: 600; }
+    .topbar-actions { display: flex; gap: 10px; align-items: center; }
+    .badge {
+      background: var(--brand);
+      color: white;
+      border-radius: 99px;
+      padding: 2px 10px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .btn {
+      padding: 8px 16px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      transition: opacity 0.15s;
+    }
+    .btn:hover { opacity: 0.85; }
+    .btn-primary { background: var(--brand); color: white; }
+    .btn-ghost   { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+    .btn-danger  { background: var(--red); color: white; }
+
+    /* ── Page sections ─────────────────────────────────────────────────── */
+    .page { display: none; padding: 28px; }
+    .page.active { display: block; }
+
+    /* ── Stat cards ────────────────────────────────────────────────────── */
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px 20px;
+    }
+    .stat-label { font-size: 12px; color: var(--muted); margin-bottom: 8px; }
+    .stat-value { font-size: 26px; font-weight: 700; }
+    .stat-value.green { color: var(--green); }
+    .stat-value.orange { color: var(--orange); }
+    .stat-delta { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+    /* ── Table ─────────────────────────────────────────────────────────── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .card-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .card-title { font-size: 15px; font-weight: 600; flex: 1 1 auto; }
+    .search-input {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 7px 12px;
+      color: var(--text);
+      font-size: 13px;
+      width: 200px;
+    }
+    .search-input::placeholder { color: var(--muted); }
+    .filter-select {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 7px 12px;
+      color: var(--text);
+      font-size: 13px;
+    }
+    table { width: 100%; border-collapse: collapse; }
+    th {
+      padding: 12px 16px;
+      text-align: left;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: var(--muted);
+      border-bottom: 1px solid var(--border);
+    }
+    td {
+      padding: 12px 16px;
+      border-bottom: 1px solid rgba(255,255,255,.04);
+      font-size: 13px;
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(108,71,255,.04); }
+    .status-pill {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 99px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .status-pending  { background: rgba(255,107,53,.15); color: var(--orange); }
+    .status-delivered{ background: rgba(0,184,153,.15);  color: var(--green); }
+    .status-cancelled{ background: rgba(229,57,53,.15);  color: var(--red); }
+
+    /* ── Tab bar ───────────────────────────────────────────────────────── */
+    [role="tablist"] {
+      display: flex;
+      gap: 4px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 20px;
+      padding: 0 4px;
+    }
+    [role="tab"] {
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      padding: 10px 18px;
+      color: var(--muted);
+      font-size: 14px;
+      cursor: pointer;
+      margin-bottom: -1px;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    [role="tab"]:hover { color: var(--text); }
+    [role="tab"][aria-selected="true"] {
+      color: var(--brand);
+      border-bottom-color: var(--brand);
+    }
+    [role="tabpanel"] { display: none; }
+    [role="tabpanel"].active { display: block; }
+
+    /* ── Customer rows ─────────────────────────────────────────────────── */
+    .customer-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 20px;
+      border-bottom: 1px solid rgba(255,255,255,.04);
+    }
+    .customer-row:last-child { border-bottom: none; }
+    .avatar {
+      width: 38px; height: 38px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; font-weight: 700;
+      flex-shrink: 0;
+    }
+    .customer-name { font-weight: 500; }
+    .customer-meta { font-size: 12px; color: var(--muted); }
+    .customer-plan {
+      margin-left: auto;
+      font-size: 12px;
+      color: var(--brand);
+      background: rgba(108,71,255,.12);
+      padding: 3px 10px;
+      border-radius: 99px;
+    }
+
+    /* ── Plans ─────────────────────────────────────────────────────────── */
+    .plan-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 16px;
+    }
+    .plan-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+    }
+    .plan-name { font-weight: 600; font-size: 16px; margin-bottom: 4px; }
+    .plan-price { font-size: 24px; font-weight: 700; color: var(--brand); }
+    .plan-price small { font-size: 13px; color: var(--muted); font-weight: 400; }
+    .plan-desc { font-size: 13px; color: var(--muted); margin: 10px 0 16px; line-height: 1.5; }
+    .plan-active-count { font-size: 12px; color: var(--green); }
+
+    /* ── Modal overlay ─────────────────────────────────────────────────── */
+    #modal-overlay {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.6);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+    #modal-overlay.open { display: flex; }
+    #add-order-modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      width: 480px;
+      max-width: calc(100vw - 32px);
+      padding: 28px;
+      animation: modal-in 0.18s ease;
+    }
+    @keyframes modal-in {
+      from { opacity: 0; transform: scale(0.96) translateY(8px); }
+      to   { opacity: 1; transform: scale(1)    translateY(0); }
+    }
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+    }
+    .modal-title { font-size: 18px; font-weight: 600; }
+    .modal-close {
+      background: none; border: none; cursor: pointer;
+      color: var(--muted); font-size: 20px; line-height: 1;
+      padding: 4px 8px; border-radius: 6px;
+    }
+    .modal-close:hover { color: var(--text); background: var(--surface2); }
+    .form-group { margin-bottom: 16px; }
+    .form-label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+    .form-input, .form-select {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 9px 12px;
+      color: var(--text);
+      font-size: 14px;
+    }
+    .form-input:focus, .form-select:focus {
+      outline: none;
+      border-color: var(--brand);
+    }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .modal-footer {
+      display: flex; gap: 10px; justify-content: flex-end;
+      margin-top: 24px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+    }
+
+    /* ── Toast container ───────────────────────────────────────────────── */
+    #toast-container {
+      position: fixed;
+      bottom: 28px; left: 50%;
+      transform: translateX(-50%);
+      z-index: 2000;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      pointer-events: none;
+    }
+    .toast-item {
+      background: rgba(22, 22, 58, 0.95);
+      backdrop-filter: blur(12px);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 20px;
+      font-size: 13px;
+      font-weight: 500;
+      animation: toast-in 0.2s ease;
+      pointer-events: auto;
+    }
+    @keyframes toast-in {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Debug panel ───────────────────────────────────────────────────── */
+    #debug-panel {
+      position: fixed;
+      top: 0; right: 0;
+      width: 380px;
+      height: 100vh;
+      background: rgba(10,10,25,.97);
+      border-left: 1px solid var(--border);
+      z-index: 9000;
+      overflow: auto;
+      padding: 16px;
+      font-size: 11px;
+      font-family: 'Menlo', 'Monaco', monospace;
+    }
+    #debug-panel[hidden] { display: none; }
+    #debug-panel h3 { color: var(--brand); margin-bottom: 8px; font-size: 12px; }
+    #debug-panel pre {
+      color: #a0d0a0;
+      white-space: pre-wrap;
+      word-break: break-all;
+      background: rgba(255,255,255,.03);
+      border-radius: 6px;
+      padding: 10px;
+      margin-bottom: 16px;
+      line-height: 1.5;
+    }
+    #debug-hint {
+      position: fixed;
+      bottom: 100px;
+      left: calc(var(--sidebar-w) + 20px);
+      font-size: 12px;
+      color: var(--muted);
+      pointer-events: none;
+    }
+
+    /* ── Responsive ────────────────────────────────────────────────────── */
+    @media (max-width: 768px) {
+      #sidebar { transform: translateX(-100%); }
+      #sidebar.open { transform: translateX(0); }
+      #hamburger-btn { display: flex; align-items: center; gap: 6px; }
+      #main { margin-left: 0; }
+      #topbar { padding-left: 60px; }
+      #mobile-menu-backdrop.open { display: block; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── Sidebar ─────────────────────────────────────────────────────────── -->
+  <aside id="sidebar" aria-label="Sidebar navigation">
+    <div class="sidebar-logo">Repeat<span>ly</span></div>
+    <nav role="navigation" aria-label="Main navigation">
+      <a id="nav-dashboard" href="#dashboard" class="active" data-page="dashboard" aria-label="Dashboard page">
+        <span class="icon">📊</span> Dashboard
+      </a>
+      <a id="nav-orders" href="#orders" data-page="orders" aria-label="Today's Orders page">
+        <span class="icon">📦</span> Today's Orders
+      </a>
+      <a id="nav-customers" href="#customers" data-page="customers" aria-label="Customers page">
+        <span class="icon">👥</span> Customers
+      </a>
+      <a id="nav-plans" href="#plans" data-page="plans" aria-label="Plans page">
+        <span class="icon">🎯</span> Plans
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      Press <kbd>Space</kbd> or <kbd>Alt+V</kbd> to speak<br>
+      Press <kbd>D</kbd> to toggle debug panel
+    </div>
+  </aside>
+
+  <button id="hamburger-btn" aria-label="Open navigation menu" aria-expanded="false" aria-controls="sidebar">
+    ☰
+  </button>
+  <div id="mobile-menu-backdrop"></div>
+
+  <!-- ── Main ────────────────────────────────────────────────────────────── -->
+  <div id="main">
+    <div id="topbar">
+      <h1 id="page-title">Dashboard</h1>
+      <div class="topbar-actions">
+        <span class="badge" id="date-badge">Loading…</span>
+        <button class="btn btn-primary" id="add-order-btn" aria-haspopup="dialog" aria-controls="add-order-modal">
+          + Add Order
+        </button>
+      </div>
+    </div>
+
+    <!-- ── Dashboard ──────────────────────────────────────────────────── -->
+    <section id="dashboard" class="page active" aria-label="Dashboard">
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="stat-label">Orders Today</div>
+          <div class="stat-value green">42</div>
+          <div class="stat-delta">↑ 8 from yesterday</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Revenue (₹)</div>
+          <div class="stat-value">12,480</div>
+          <div class="stat-delta">↑ ₹1,200 this week</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Active Plans</div>
+          <div class="stat-value orange">18</div>
+          <div class="stat-delta">3 renewing this week</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Pending</div>
+          <div class="stat-value">7</div>
+          <div class="stat-delta">Needs attention</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Recent Orders</span>
+          <input type="search" class="search-input" id="order-search" placeholder="Search orders…" aria-label="Search orders">
+          <select class="filter-select" id="status-filter" aria-label="Filter by status">
+            <option value="all">All statuses</option>
+            <option value="pending">Pending</option>
+            <option value="delivered">Delivered</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
+        </div>
+        <table id="orders-table" aria-label="Recent orders">
+          <thead>
+            <tr>
+              <th>Order ID</th>
+              <th>Customer</th>
+              <th>Items</th>
+              <th>Amount</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="orders-tbody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ── Today's Orders ─────────────────────────────────────────────── -->
+    <section id="orders" class="page" aria-label="Today's Orders">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Today's Deliveries</span>
+          <select class="filter-select" id="orders-zone-filter" aria-label="Filter by zone">
+            <option>All zones</option>
+            <option>North</option>
+            <option>South</option>
+            <option>East</option>
+            <option>West</option>
+          </select>
+        </div>
+        <table aria-label="Today's deliveries">
+          <thead>
+            <tr><th>Time</th><th>Customer</th><th>Address</th><th>Items</th><th>Status</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>8:00 AM</td><td>Priya Sharma</td><td>12 MG Road, North</td><td>Dal Rice × 2</td><td><span class="status-pill status-delivered">Delivered</span></td></tr>
+            <tr><td>8:30 AM</td><td>Rohan Gupta</td><td>45 Park St, South</td><td>Poha × 1</td><td><span class="status-pill status-delivered">Delivered</span></td></tr>
+            <tr><td>9:00 AM</td><td>Ananya Singh</td><td>7 Lake View, East</td><td>Upma × 3</td><td><span class="status-pill status-pending">Pending</span></td></tr>
+            <tr><td>9:30 AM</td><td>Vikram Patel</td><td>88 West Ave, West</td><td>Idli × 2</td><td><span class="status-pill status-pending">Pending</span></td></tr>
+            <tr><td>10:00 AM</td><td>Deepa Nair</td><td>3 Hill Rd, North</td><td>Paratha × 1</td><td><span class="status-pill status-cancelled">Cancelled</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ── Customers ──────────────────────────────────────────────────── -->
+    <section id="customers" class="page" aria-label="Customers">
+      <div role="tablist" aria-label="Customer filters">
+        <button role="tab" id="tab-active" aria-selected="true" aria-controls="panel-active">
+          Active
+        </button>
+        <button role="tab" id="tab-inactive" aria-selected="false" aria-controls="panel-inactive">
+          Inactive
+        </button>
+        <button role="tab" id="tab-all" aria-selected="false" aria-controls="panel-all">
+          All Customers
+        </button>
+      </div>
+
+      <div id="panel-active" role="tabpanel" aria-labelledby="tab-active" class="card active">
+        <div class="customer-row">
+          <div class="avatar" style="background:#6C47FF22;color:#6C47FF">PS</div>
+          <div><div class="customer-name">Priya Sharma</div><div class="customer-meta">priya@email.com · Joined Jan 2024</div></div>
+          <div class="customer-plan">Lunch Plan</div>
+        </div>
+        <div class="customer-row">
+          <div class="avatar" style="background:#00B89922;color:#00B899">RG</div>
+          <div><div class="customer-name">Rohan Gupta</div><div class="customer-meta">rohan@email.com · Joined Feb 2024</div></div>
+          <div class="customer-plan">Breakfast Plan</div>
+        </div>
+        <div class="customer-row">
+          <div class="avatar" style="background:#FF6B3522;color:#FF6B35">AS</div>
+          <div><div class="customer-name">Ananya Singh</div><div class="customer-meta">ananya@email.com · Joined Dec 2023</div></div>
+          <div class="customer-plan">Full Day Plan</div>
+        </div>
+      </div>
+
+      <div id="panel-inactive" role="tabpanel" aria-labelledby="tab-inactive" class="card">
+        <div class="customer-row">
+          <div class="avatar" style="background:#50507022;color:#707090">DN</div>
+          <div><div class="customer-name">Deepa Nair</div><div class="customer-meta">deepa@email.com · Paused Mar 2024</div></div>
+          <div class="customer-plan" style="color:var(--muted);background:rgba(255,255,255,.06)">Paused</div>
+        </div>
+      </div>
+
+      <div id="panel-all" role="tabpanel" aria-labelledby="tab-all" class="card">
+        <div class="customer-row">
+          <div class="avatar" style="background:#6C47FF22;color:#6C47FF">PS</div>
+          <div><div class="customer-name">Priya Sharma</div><div class="customer-meta">Active · Lunch Plan</div></div>
+        </div>
+        <div class="customer-row">
+          <div class="avatar" style="background:#00B89922;color:#00B899">RG</div>
+          <div><div class="customer-name">Rohan Gupta</div><div class="customer-meta">Active · Breakfast Plan</div></div>
+        </div>
+        <div class="customer-row">
+          <div class="avatar" style="background:#FF6B3522;color:#FF6B35">AS</div>
+          <div><div class="customer-name">Ananya Singh</div><div class="customer-meta">Active · Full Day Plan</div></div>
+        </div>
+        <div class="customer-row">
+          <div class="avatar" style="background:#50507022;color:#707090">DN</div>
+          <div><div class="customer-name">Deepa Nair</div><div class="customer-meta">Inactive · Paused</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Plans ──────────────────────────────────────────────────────── -->
+    <section id="plans" class="page" aria-label="Plans">
+      <div class="plan-grid">
+        <div class="plan-card">
+          <div class="plan-name">Breakfast Plan</div>
+          <div class="plan-price">₹1,200 <small>/month</small></div>
+          <div class="plan-desc">Morning meal delivery Mon–Sat. Poha, upma, idli rotation.</div>
+          <div class="plan-active-count">● 8 active subscribers</div>
+        </div>
+        <div class="plan-card">
+          <div class="plan-name">Lunch Plan</div>
+          <div class="plan-price">₹2,500 <small>/month</small></div>
+          <div class="plan-desc">Fresh dal-rice, sabzi, roti every weekday. Customisable.</div>
+          <div class="plan-active-count">● 14 active subscribers</div>
+        </div>
+        <div class="plan-card">
+          <div class="plan-name">Full Day Plan</div>
+          <div class="plan-price">₹3,800 <small>/month</small></div>
+          <div class="plan-desc">All 3 meals + evening snack. Best value for families.</div>
+          <div class="plan-active-count">● 6 active subscribers</div>
+        </div>
+        <div class="plan-card">
+          <div class="plan-name">Weekend Special</div>
+          <div class="plan-price">₹800 <small>/month</small></div>
+          <div class="plan-desc">Saturday–Sunday breakfast + lunch. Great for WFH folks.</div>
+          <div class="plan-active-count">● 3 active subscribers</div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ── Add Order Modal ──────────────────────────────────────────────────── -->
+  <div id="modal-overlay" role="none">
+    <div id="add-order-modal"
+         role="dialog"
+         aria-modal="true"
+         aria-labelledby="modal-title">
+      <div class="modal-header">
+        <span class="modal-title" id="modal-title">Add New Order</span>
+        <button class="modal-close" id="close-modal-btn" aria-label="Close dialog">✕</button>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="customer-name">Customer Name</label>
+        <input type="text" id="customer-name" class="form-input" placeholder="e.g. Priya Sharma" />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="meal-plan">Meal Plan</label>
+        <select id="meal-plan" class="form-select">
+          <option>Breakfast Plan</option>
+          <option>Lunch Plan</option>
+          <option>Full Day Plan</option>
+          <option>Weekend Special</option>
+        </select>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="delivery-date">Delivery Date</label>
+          <input type="date" id="delivery-date" class="form-input" />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="qty">Quantity</label>
+          <input type="number" id="qty" class="form-input" value="1" min="1" max="10" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="notes">Notes (optional)</label>
+        <input type="text" id="notes" class="form-input" placeholder="Dietary restrictions, gate code…" />
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-ghost" id="cancel-order-btn">Cancel</button>
+        <button class="btn btn-primary" id="submit-order-btn">Place Order</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Toast container ─────────────────────────────────────────────────── -->
+  <div id="toast-container" aria-live="polite" aria-atomic="false"></div>
+
+  <!-- ── Debug panel ─────────────────────────────────────────────────────── -->
+  <div id="debug-panel" hidden>
+    <h3>⚡ Page Map</h3>
+    <pre id="debug-map">—</pre>
+    <h3>🎯 Last Intent</h3>
+    <pre id="debug-intent">—</pre>
+  </div>
+  <div id="debug-hint">Press <strong>D</strong> to open debug panel</div>
+
+  <!-- ── Scripts ─────────────────────────────────────────────────────────── -->
+
+  <!-- Built bundle — copied to demo/public/ by npm run dev / npm run build -->
+  <script src="/voicelayer.iife.js"></script>
+
+  <script>
+    // ── Toast helper (defined first — used during param parsing) ───────────
+    function showToast(message) {
+      const container = document.getElementById('toast-container');
+      if (!container) { setTimeout(() => showToast(message), 200); return; }
+      const toast = document.createElement('div');
+      toast.className = 'toast-item';
+      toast.setAttribute('role', 'alert');
+      toast.textContent = message;
+      container.appendChild(toast);
+      setTimeout(() => toast.remove(), 4_000);
+    }
+
+    // ── Read config from URL params ─────────────────────────────────────
+    // Mode A (direct keys):   ?anthropic=sk-ant-...&openai=sk-...
+    // Mode B (server proxy):  ?proxyUrl=/proxy&apiKey=vl_dev_key
+    const params = new URLSearchParams(location.search);
+    const anthropicKey   = params.get('anthropic') || undefined;
+    const openaiKey      = params.get('openai')    || undefined;
+    const proxyUrlParam  = params.get('proxyUrl')  || undefined;   // e.g. /proxy
+    const apiKeyParam    = params.get('apiKey')    || undefined;   // SDK API key
+    const ttsProvider    = params.get('tts')       || 'browser';
+    const debugMode      = params.has('debug');
+    const forceWebSpeech = params.get('stt') === 'webspeech';
+
+    // Determine which mode we're in
+    const useServerProxy = !!proxyUrlParam && !anthropicKey;
+    if (useServerProxy) {
+      showToast('🔑 Server proxy mode — API keys stay on the server');
+    } else if (!anthropicKey && !openaiKey) {
+      showToast('ℹ️ No API key — open ?anthropic=sk-ant-... or ?proxyUrl=/proxy&apiKey=...');
+    }
+
+    // ── Date badge ───────────────────────────────────────────────────────
+    document.getElementById('date-badge').textContent =
+      new Date().toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' });
+
+    // ── Seed orders table ────────────────────────────────────────────────
+    const orders = [
+      { id: '#R-1042', customer: 'Priya Sharma',   items: 'Lunch Plan × 2',  amount: '₹240', status: 'delivered' },
+      { id: '#R-1041', customer: 'Rohan Gupta',    items: 'Breakfast × 1',   amount: '₹80',  status: 'pending' },
+      { id: '#R-1040', customer: 'Ananya Singh',   items: 'Full Day × 1',    amount: '₹380', status: 'pending' },
+      { id: '#R-1039', customer: 'Vikram Patel',   items: 'Lunch Plan × 1',  amount: '₹120', status: 'delivered' },
+      { id: '#R-1038', customer: 'Meera Krishnan', items: 'Weekend × 2',     amount: '₹160', status: 'cancelled' },
+    ];
+
+    function renderOrders(list) {
+      const tbody = document.getElementById('orders-tbody');
+      tbody.innerHTML = list.map(o => `
+        <tr>
+          <td><code style="color:var(--muted)">${o.id}</code></td>
+          <td>${o.customer}</td>
+          <td>${o.items}</td>
+          <td>${o.amount}</td>
+          <td><span class="status-pill status-${o.status}">${o.status.charAt(0).toUpperCase()+o.status.slice(1)}</span></td>
+          <td><button class="btn btn-ghost" style="padding:4px 10px;font-size:12px" data-order="${o.id}">View</button></td>
+        </tr>
+      `).join('');
+      // Re-bind view buttons
+      tbody.querySelectorAll('[data-order]').forEach(btn => {
+        btn.addEventListener('click', () => showToast(`Viewing order ${btn.dataset.order}`));
+      });
+    }
+    renderOrders(orders);
+
+    // ── Order search + filter ────────────────────────────────────────────
+    function applyFilters() {
+      const q = document.getElementById('order-search').value.toLowerCase();
+      const s = document.getElementById('status-filter').value;
+      renderOrders(orders.filter(o =>
+        (s === 'all' || o.status === s) &&
+        (o.customer.toLowerCase().includes(q) || o.id.includes(q))
+      ));
+    }
+    document.getElementById('order-search').addEventListener('input', applyFilters);
+    document.getElementById('status-filter').addEventListener('change', applyFilters);
+
+    // ── Page navigation ───────────────────────────────────────────────────
+    const pages = document.querySelectorAll('.page');
+    const navLinks = document.querySelectorAll('nav[role="navigation"] a');
+    const pageTitles = {
+      dashboard: 'Dashboard',
+      orders: "Today's Orders",
+      customers: 'Customers',
+      plans: 'Plans',
+    };
+
+    function navigateTo(pageId) {
+      pages.forEach(p => p.classList.remove('active'));
+      navLinks.forEach(a => a.classList.remove('active'));
+      const page = document.getElementById(pageId);
+      if (page) page.classList.add('active');
+      const link = document.querySelector(`[data-page="${pageId}"]`);
+      if (link) link.classList.add('active');
+      document.getElementById('page-title').textContent = pageTitles[pageId] ?? pageId;
+      history.pushState({ page: pageId }, '', `#${pageId}`);
+    }
+
+    navLinks.forEach(a => {
+      a.addEventListener('click', e => {
+        e.preventDefault();
+        const page = a.dataset.page;
+        if (page) { navigateTo(page); closeSidebar(); }
+      });
+    });
+
+    window.addEventListener('popstate', e => {
+      const page = e.state?.page ?? location.hash.slice(1) ?? 'dashboard';
+      navigateTo(page);
+    });
+
+    // ── Hamburger ─────────────────────────────────────────────────────────
+    function openSidebar() {
+      document.getElementById('sidebar').classList.add('open');
+      document.getElementById('mobile-menu-backdrop').classList.add('open');
+      document.getElementById('hamburger-btn').setAttribute('aria-expanded', 'true');
+    }
+    function closeSidebar() {
+      document.getElementById('sidebar').classList.remove('open');
+      document.getElementById('mobile-menu-backdrop').classList.remove('open');
+      document.getElementById('hamburger-btn').setAttribute('aria-expanded', 'false');
+    }
+    document.getElementById('hamburger-btn').addEventListener('click', openSidebar);
+    document.getElementById('mobile-menu-backdrop').addEventListener('click', closeSidebar);
+
+    // ── Customer tabs ─────────────────────────────────────────────────────
+    document.querySelectorAll('[role="tablist"] [role="tab"]').forEach(tab => {
+      tab.addEventListener('click', () => {
+        tab.closest('[role="tablist"]').querySelectorAll('[role="tab"]').forEach(t => {
+          t.setAttribute('aria-selected', 'false');
+        });
+        document.querySelectorAll('[role="tabpanel"]').forEach(p => p.classList.remove('active'));
+        tab.setAttribute('aria-selected', 'true');
+        const panelId = tab.getAttribute('aria-controls');
+        if (panelId) document.getElementById(panelId)?.classList.add('active');
+      });
+    });
+
+    // ── Add Order modal ────────────────────────────────────────────────────
+    function openModal() {
+      document.getElementById('modal-overlay').classList.add('open');
+      document.getElementById('customer-name').focus();
+    }
+    function closeModal() {
+      document.getElementById('modal-overlay').classList.remove('open');
+    }
+
+    document.getElementById('add-order-btn').addEventListener('click', openModal);
+    document.getElementById('close-modal-btn').addEventListener('click', closeModal);
+    document.getElementById('cancel-order-btn').addEventListener('click', closeModal);
+    document.getElementById('modal-overlay').addEventListener('click', e => {
+      if (e.target === document.getElementById('modal-overlay')) closeModal();
+    });
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') closeModal();
+    });
+
+    document.getElementById('submit-order-btn').addEventListener('click', () => {
+      const name = document.getElementById('customer-name').value.trim();
+      const plan = document.getElementById('meal-plan').value;
+      closeModal();
+      showToast(`✅ Order placed${name ? ` for ${name}` : ''} — ${plan}`);
+    });
+
+    // ── Debug panel ───────────────────────────────────────────────────────
+    document.addEventListener('keydown', e => {
+      if ((e.key === 'd' || e.key === 'D') && !e.metaKey && !e.ctrlKey) {
+        const active = document.activeElement?.tagName?.toLowerCase();
+        if (active === 'input' || active === 'textarea' || active === 'select') return;
+        const panel = document.getElementById('debug-panel');
+        panel.toggleAttribute('hidden');
+      }
+    });
+
+    // ── VoiceLayer init ────────────────────────────────────────────────────
+    // IIFE global is the module namespace; the class is VoiceLayer.VoiceLayer
+    const VoiceLayerClass = window.VoiceLayer?.VoiceLayer ?? window.VoiceLayer;
+    if (VoiceLayerClass) {
+      // Build config depending on mode
+      const vlConfig = useServerProxy
+        ? {
+            // Mode B: analytics server proxy — no keys in browser
+            sdkApiKey:        apiKeyParam,
+            anthropicProxyUrl: `${proxyUrlParam}/anthropic`,
+            openaiProxyUrl:    `${proxyUrlParam}/openai`,
+            stt:               forceWebSpeech ? 'webspeech' : undefined,
+            tts:               { provider: ttsProvider },
+            debug:             debugMode || true,
+            analytics:         { enabled: true, appId: 'repeatly-demo', endpoint: '/api/events' },
+            announceToasts:    true,
+            announceModals:    true,
+            rescanOnMutation:  true,
+          }
+        : {
+            // Mode A: direct keys (dev only)
+            anthropicKey,
+            openaiKey,
+            stt:               forceWebSpeech ? 'webspeech' : undefined,
+            anthropicProxyUrl: anthropicKey ? '/api/anthropic' : undefined,
+            openaiProxyUrl:    openaiKey    ? '/api/openai'    : undefined,
+            tts:               { provider: ttsProvider },
+            debug:             debugMode || true,
+            analytics:         { enabled: true, appId: 'repeatly-demo', endpoint: '/api/events' },
+            announceToasts:    true,
+            announceModals:    true,
+            rescanOnMutation:  true,
+          };
+
+      const vl = new VoiceLayerClass(vlConfig);
+
+      vl.init().then(() => {
+        showToast('🎙️ VoiceLayer ready — press Space or Alt+V to speak');
+
+        // ── Scan diagnostic ────────────────────────────────────────────────
+        // Enable per-element debug logging inside findInteractiveElements
+        window.__vlDebugScan = true;
+
+        // Trigger a fresh scan so we can see all [VL-SCAN] logs
+        const map0 = vl.currentPageMap;
+        console.log('[SCAN] availableActions.length =', map0?.availableActions?.length);
+        console.log('[SCAN] first 5:', map0?.availableActions?.slice(0, 5));
+
+        // Also manually re-run the scan through the SDK so logs appear
+        // (currentPageMap is set at init time; call buildMap again via vl internals)
+        try {
+          // Re-scan directly to see the per-candidate logs
+          const INTERACTIVE_SELECTOR = [
+            'button','a[href]','input:not([type="hidden"])','select','textarea',
+            '[role="button"]','[role="link"]','[role="menuitem"]','[role="option"]',
+            '[role="tab"]','[role="checkbox"]','[role="radio"]','[role="switch"]',
+            '[role="combobox"]','[role="searchbox"]','[role="spinbutton"]','[role="slider"]',
+            '[tabindex]:not([tabindex="-1"])','[onclick]','[data-action]','[data-href]',
+            '[class*="btn"]:not(script):not(style)','[class*="button"]:not(script):not(style)',
+            '[data-toggle]','[data-target]','[aria-haspopup]','[aria-controls]',
+          ].join(', ');
+          const raw = document.body.querySelectorAll(INTERACTIVE_SELECTOR);
+          console.log('[SCAN] raw INTERACTIVE_SELECTOR count:', raw.length);
+          // Log first 10 with tag/id/class
+          Array.from(raw).slice(0, 10).forEach((el, i) => {
+            const tag = el.tagName.toLowerCase();
+            const id = el.getAttribute('id') ?? '';
+            const cls = typeof el.className === 'string' ? el.className : '';
+            const display = getComputedStyle(el).display;
+            const visibility = getComputedStyle(el).visibility;
+            // manually check ancestor for display:none
+            let hiddenAncestor = null;
+            let node = el;
+            while (node && node !== document.body) {
+              const cs = getComputedStyle(node);
+              if (cs.display === 'none' || cs.visibility === 'hidden') { hiddenAncestor = node; break; }
+              node = node.parentElement;
+            }
+            const sdkAncestor = (() => {
+              let n = el;
+              while (n) {
+                const c = typeof n.className === 'string' ? n.className : '';
+                if (c.split(' ').some(x => x.startsWith('voicelayer')) || n.id.startsWith('voicelayer')) return n;
+                n = n.parentElement;
+              }
+              return null;
+            })();
+            console.log(`[SCAN][${i}] <${tag}#${id}.${cls.slice(0,30)}> display=${display} vis=${visibility} hiddenAnc=${hiddenAncestor ? hiddenAncestor.tagName+'#'+hiddenAncestor.id : 'NONE'} sdkAnc=${sdkAncestor ? sdkAncestor.id : 'NONE'}`);
+          });
+        } catch(e) { console.error('[SCAN] diagnostic failed:', e); }
+
+        // Update debug panel on each AI response
+        window.addEventListener('voicelayer:tap', () => {
+          setTimeout(() => {
+            const map = vl.currentPageMap;
+            if (map) {
+              document.getElementById('debug-map').textContent =
+                JSON.stringify(map, null, 2);
+            }
+          }, 500);
+        });
+      }).catch(err => {
+        console.error('[Demo] VoiceLayer init failed:', err);
+        showToast('⚠️ VoiceLayer failed to init — check console');
+      });
+
+      // Expose for browser console debugging
+      window.vl = vl;
+    } else {
+      showToast('⚠️ voicelayer.iife.js not loaded — run: npm run build && npm run dev');
+    }
+
+    // Demo: open modal after 3s to show AnnouncerBar modal detection
+    setTimeout(() => {
+      openModal();
+      showToast('📂 Demo modal opened — AnnouncerBar should announce this');
+    }, 3_000);
+  </script>
+</body>
+</html>

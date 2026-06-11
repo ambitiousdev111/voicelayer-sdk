@@ -1,0 +1,21 @@
+{
+  "name": "voicelayer-monorepo",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "npm run build -w packages/core && npm run copy:demo-bundle",
+    "copy:demo-bundle": "mkdir -p demo/public && cp packages/core/dist/voicelayer.iife.js demo/public/voicelayer.iife.js",
+    "test": "npm run test -w packages/core",
+    "dev": "npm run copy:demo-bundle && vite --config demo/vite.config.ts"
+  },
+  "devDependencies": {
+    "@vitest/coverage-v8": "^2.1.9",
+    "happy-dom": "^20.9.0",
+    "typescript": "^5.4.5",
+    "vite": "^5.2.11",
+    "vitest": "^2.1.9"
+  }
+}

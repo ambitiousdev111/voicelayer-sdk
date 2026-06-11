@@ -1,0 +1,41 @@
+{
+  "name": "voicelayer-sdk",
+  "version": "0.2.0",
+  "description": "Make any web app voice-controlled in one script tag",
+  "main": "dist/voicelayer.umd.js",
+  "module": "dist/voicelayer.mjs",
+  "types": "dist/index.d.ts",
+  "unpkg": "dist/voicelayer.iife.js",
+  "jsdelivr": "dist/voicelayer.iife.js",
+  "exports": {
+    ".": {
+      "import": "./dist/voicelayer.mjs",
+      "require": "./dist/voicelayer.umd.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "vite build --config vite.config.ts",
+    "test": "vitest run",
+    "dev": "vite build --config vite.config.ts --watch"
+  },
+  "keywords": [
+    "voice",
+    "sdk",
+    "web",
+    "ai",
+    "hindi",
+    "accessibility",
+    "speech",
+    "overlay"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "vite-plugin-dts": "^4.5.4"
+  }
+}

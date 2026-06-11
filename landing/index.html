@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VoiceLayer — Voice intelligence for any app</title>
+  <meta name="description" content="Add a voice assistant to your web or React Native app in minutes. Auto-detects screens, understands context, speaks Hindi & Hinglish. Zero config." />
+  <meta property="og:title" content="VoiceLayer — Voice intelligence for any app" />
+  <meta property="og:description" content="Not just voice navigation — voice intelligence. Auto-detects your screens. Understands context, history, and pronouns. Hindi-first." />
+  <meta property="og:type" content="website" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --green:   #4ade80;
+      --green-d: #16a34a;
+      --bg:      #0a0a0a;
+      --bg2:     #111;
+      --bg3:     #1a1a1a;
+      --border:  #222;
+      --border2: #2a2a2a;
+      --text:    #f0f0f0;
+      --muted:   #666;
+      --muted2:  #444;
+      --radius:  14px;
+    }
+
+    html { scroll-behavior: smooth; }
+    body { background: var(--bg); color: var(--text); font-family: 'Inter', system-ui, sans-serif; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+    a { color: inherit; text-decoration: none; }
+
+    /* ── NAV ─────────────────────────────────────────────────────────────────── */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 40px;
+      background: rgba(10,10,10,0.88); backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 18px; }
+    .nav-logo .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{ box-shadow:0 0 0 0 rgba(74,222,128,.5) } 50%{ box-shadow:0 0 0 8px rgba(74,222,128,0) } }
+    .nav-links { display: flex; gap: 32px; font-size: 14px; color: var(--muted); }
+    .nav-links a:hover { color: var(--text); }
+    .nav-cta { background: var(--green); color: #000; padding: 8px 20px; border-radius: 8px; font-weight: 600; font-size: 14px; transition: opacity .15s; }
+    .nav-cta:hover { opacity: .85; }
+
+    /* ── HERO ────────────────────────────────────────────────────────────────── */
+    .hero { text-align: center; padding: 100px 24px 80px; max-width: 860px; margin: 0 auto; }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(74,222,128,.1); border: 1px solid rgba(74,222,128,.25);
+      color: var(--green); font-size: 13px; font-weight: 500;
+      padding: 5px 14px; border-radius: 100px; margin-bottom: 28px;
+    }
+    .hero h1 { font-size: clamp(40px,7vw,72px); font-weight: 900; line-height: 1.08; letter-spacing: -2px; margin-bottom: 20px; }
+    .hero h1 span { color: var(--green); }
+    .hero p { font-size: clamp(16px,2.5vw,20px); color: var(--muted); max-width: 600px; margin: 0 auto 40px; line-height: 1.7; }
+    .hero-form { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; max-width: 480px; margin: 0 auto; }
+    .hero-form input {
+      flex: 1; min-width: 220px; background: var(--bg3); border: 1px solid var(--border);
+      color: var(--text); font-size: 15px; font-family: inherit;
+      padding: 14px 18px; border-radius: 10px; outline: none; transition: border-color .2s;
+    }
+    .hero-form input:focus { border-color: var(--green); }
+    .hero-form input::placeholder { color: var(--muted); }
+    .btn-green {
+      background: var(--green); color: #000; font-weight: 700; font-size: 15px;
+      font-family: inherit; padding: 14px 28px; border-radius: 10px; border: none;
+      cursor: pointer; transition: opacity .15s; white-space: nowrap;
+    }
+    .btn-green:hover { opacity: .88; }
+    .hero-sub { margin-top: 14px; font-size: 13px; color: var(--muted); }
+    .hero-count { margin-top: 24px; font-size: 13px; color: var(--muted2); }
+
+    /* ── DEMO ────────────────────────────────────────────────────────────────── */
+    .demo-section { padding: 0 24px 80px; }
+    .demo-wrap { max-width: 940px; margin: 0 auto; background: var(--bg2); border: 1px solid var(--border); border-radius: 20px; overflow: hidden; }
+    .demo-bar { background: var(--bg3); border-bottom: 1px solid var(--border); padding: 12px 18px; display: flex; align-items: center; gap: 8px; }
+    .demo-bar .dr { width:12px;height:12px;border-radius:50%;background:#ff5f57; }
+    .demo-bar .dy { width:12px;height:12px;border-radius:50%;background:#febc2e; }
+    .demo-bar .dg { width:12px;height:12px;border-radius:50%;background:#28c840; }
+    .demo-bar .url { flex:1;text-align:center;background:var(--bg);border:1px solid var(--border);color:var(--muted);font-size:12px;padding:4px 12px;border-radius:6px; }
+    .demo-inner { padding: 40px 32px; display: flex; align-items: flex-start; justify-content: center; gap: 48px; flex-wrap: wrap; }
+
+    /* phone mockup */
+    .phone { width: 220px; background: #111; border-radius: 28px; border: 1px solid #2a2a2a; padding: 16px; flex-shrink: 0; box-shadow: 0 24px 64px rgba(0,0,0,.6); }
+    .phone-screen { background: #1a1a1a; border-radius: 18px; overflow: hidden; }
+    .phone-topbar { background: #111; padding: 8px 14px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #222; }
+    .phone-title { font-size: 11px; font-weight: 600; color: #aaa; }
+    .phone-tabs { display: flex; gap: 6px; padding: 10px 14px 0; background: #111; border-bottom: 1px solid #1e1e1e; }
+    .phone-tab { font-size: 10px; padding: 4px 8px; border-radius: 4px; color: #555; }
+    .phone-tab.active { background: rgba(74,222,128,.15); color: var(--green); }
+    .phone-body { padding: 12px 14px; }
+    .phone-row { height: 36px; background: #222; border-radius: 8px; margin-bottom: 8px; }
+    .phone-row.sm { height: 28px; }
+    .phone-row.hi { height: 48px; }
+    .phone-fab { width: 36px; height: 36px; border-radius: 50%; background: var(--green); display: flex; align-items: center; justify-content: center; font-size: 16px; margin: 12px 0 4px 0; animation: floatfab 3s ease-in-out infinite; }
+    @keyframes floatfab { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-5px)} }
+
+    /* conversation */
+    .convo { flex: 1; min-width: 260px; display: flex; flex-direction: column; gap: 0; }
+    .convo-title { font-size: 12px; font-weight: 700; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 16px; }
+    .msg { display: flex; flex-direction: column; gap: 2px; margin-bottom: 16px; }
+    .msg-label { font-size: 11px; font-weight: 600; color: var(--muted); margin-bottom: 4px; }
+    .bubble {
+      display: inline-block; padding: 10px 14px; border-radius: 12px;
+      font-size: 13px; line-height: 1.5; max-width: 100%;
+    }
+    .bubble.user { background: #1e2e1e; border: 1px solid #2a3d2a; color: #c8f0c8; align-self: flex-start; }
+    .bubble.ai   { background: var(--bg3); border: 1px solid var(--border); color: var(--text); align-self: flex-start; }
+    .bubble.nav  { background: rgba(74,222,128,.08); border: 1px solid rgba(74,222,128,.2); color: var(--green); font-size: 12px; font-family: 'JetBrains Mono',monospace; }
+    .convo-arrow { font-size: 11px; color: var(--muted2); margin: -8px 0 8px 4px; }
+
+    /* ── SECTIONS ────────────────────────────────────────────────────────────── */
+    section { padding: 80px 24px; }
+    .section-label { text-align:center;font-size:12px;font-weight:600;letter-spacing:2px;color:var(--green);text-transform:uppercase;margin-bottom:14px; }
+    .section-title { text-align:center;font-size:clamp(28px,4vw,42px);font-weight:800;letter-spacing:-1px;margin-bottom:16px;line-height:1.2; }
+    .section-sub   { text-align:center;color:var(--muted);font-size:17px;max-width:540px;margin:0 auto 56px;line-height:1.7; }
+    .container { max-width: 1020px; margin: 0 auto; }
+
+    /* ── HOW IT WORKS ────────────────────────────────────────────────────────── */
+    .steps-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; }
+    .step-card { background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:28px 24px;transition:border-color .2s; }
+    .step-card:hover { border-color: var(--green); }
+    .step-card .num { font-size:13px;font-weight:700;color:var(--green);margin-bottom:14px;display:block; }
+    .step-card h3 { font-size:17px;font-weight:700;margin-bottom:8px; }
+    .step-card p  { font-size:14px;color:var(--muted);line-height:1.6; }
+
+    /* ── INTELLIGENCE SECTION ────────────────────────────────────────────────── */
+    .intel-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+    .intel-card {
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 24px;
+      transition: border-color .2s, transform .2s;
+    }
+    .intel-card:hover { border-color: rgba(74,222,128,.4); transform: translateY(-2px); }
+    .intel-head { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+    .intel-num {
+      width: 28px; height: 28px; border-radius: 8px; flex-shrink: 0;
+      background: rgba(74,222,128,.12); border: 1px solid rgba(74,222,128,.25);
+      color: var(--green); font-size: 12px; font-weight: 800;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .intel-card h3 { font-size: 15px; font-weight: 700; }
+    .intel-card p  { font-size: 13px; color: var(--muted); line-height: 1.6; margin-bottom: 14px; }
+    .intel-example {
+      background: var(--bg3); border: 1px solid var(--border2);
+      border-radius: 8px; padding: 10px 14px;
+      font-size: 12px; font-family: 'JetBrains Mono', monospace;
+      color: #aaa; line-height: 1.7;
+    }
+    .intel-example .hl  { color: var(--green); }
+    .intel-example .dim { color: var(--muted2); }
+    .intel-badge {
+      display: inline-block; font-size: 10px; font-weight: 700;
+      padding: 2px 8px; border-radius: 4px; margin-bottom: 10px;
+      letter-spacing: .5px; text-transform: uppercase;
+    }
+    .badge-auto     { background: rgba(74,222,128,.12);  color: var(--green); border: 1px solid rgba(74,222,128,.2); }
+    .badge-optional { background: rgba(99,179,237,.1);   color: #63b3ed;      border: 1px solid rgba(99,179,237,.2); }
+
+    /* ── INTEGRATION ─────────────────────────────────────────────────────────── */
+    .tabs { display:flex;gap:4px;justify-content:center;margin-bottom:32px; }
+    .tab { padding:10px 24px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;border:none;background:var(--bg3);color:var(--muted);font-family:inherit;transition:all .15s; }
+    .tab.active { background:var(--green);color:#000; }
+    .tab-content { display:none; }
+    .tab-content.active { display:block; }
+    .code-wrap { background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;max-width:780px;margin:0 auto 20px; }
+    .code-header { background:var(--bg3);border-bottom:1px solid var(--border);padding:10px 18px;display:flex;align-items:center;justify-content:space-between; }
+    .code-header span { font-size:13px;color:var(--muted);font-family:'JetBrains Mono',monospace; }
+    .copy-btn { background:none;border:1px solid var(--border);color:var(--muted);font-size:12px;font-family:inherit;padding:4px 10px;border-radius:5px;cursor:pointer;transition:all .15s; }
+    .copy-btn:hover { border-color:var(--green);color:var(--green); }
+    pre { padding:22px 24px;overflow-x:auto;font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.8; }
+    .kw  { color:#c792ea; } .str { color:#c3e88d; } .cmt { color:#546e7a;font-style:italic; }
+    .tag { color:#89ddff; } .attr{ color:#ffcb6b; } .val { color:#c3e88d; }
+    .fn  { color:#82aaff; } .num { color:#f78c6c; }
+    .step-list { max-width:780px;margin:0 auto;display:flex;flex-direction:column;gap:20px; }
+    .step-item { display:flex;gap:16px;align-items:flex-start;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px 22px; }
+    .step-badge { width:28px;height:28px;border-radius:8px;background:rgba(74,222,128,.12);border:1px solid rgba(74,222,128,.25);color:var(--green);font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0; }
+    .step-body h4 { font-size:15px;font-weight:600;margin-bottom:6px; }
+    .step-body p  { font-size:13px;color:var(--muted);line-height:1.6; }
+    .step-body code { background:var(--bg3);border:1px solid var(--border);padding:2px 8px;border-radius:5px;font-size:12px;font-family:'JetBrains Mono',monospace;color:var(--green); }
+
+    /* ── FEATURES ────────────────────────────────────────────────────────────── */
+    .features-grid { display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px; }
+    .feature-card { background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:28px 24px; }
+    .feature-icon { font-size:28px;margin-bottom:14px; }
+    .feature-card h3 { font-size:16px;font-weight:700;margin-bottom:8px; }
+    .feature-card p  { font-size:14px;color:var(--muted);line-height:1.6; }
+
+    /* ── WAITLIST ────────────────────────────────────────────────────────────── */
+    .waitlist-section { background:linear-gradient(135deg,rgba(74,222,128,.06) 0%,rgba(10,10,10,0) 60%);border-top:1px solid var(--border);padding:100px 24px;text-align:center; }
+    .waitlist-section h2 { font-size:clamp(30px,5vw,52px);font-weight:900;letter-spacing:-1.5px;margin-bottom:16px;line-height:1.1; }
+    .waitlist-section p { color:var(--muted);font-size:17px;margin-bottom:36px; }
+    .wl-form { display:flex;gap:10px;justify-content:center;flex-wrap:wrap;max-width:480px;margin:0 auto; }
+    .wl-form input { flex:1;min-width:220px;background:var(--bg3);border:1px solid var(--border);color:var(--text);font-size:15px;font-family:inherit;padding:14px 18px;border-radius:10px;outline:none;transition:border-color .2s; }
+    .wl-form input:focus { border-color:var(--green); }
+    .wl-form input::placeholder { color:var(--muted); }
+    #wl-success { display:none;margin-top:20px;background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.3);color:var(--green);padding:14px 24px;border-radius:10px;font-size:15px;font-weight:500; }
+
+    /* ── FOOTER ──────────────────────────────────────────────────────────────── */
+    footer { border-top:1px solid var(--border);padding:28px 40px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px; }
+    .footer-logo { font-weight:700;font-size:15px;display:flex;align-items:center;gap:6px; }
+    .footer-logo .dot { width:8px;height:8px;border-radius:50%;background:var(--green); }
+    footer p { font-size:13px;color:var(--muted); }
+
+    /* ── TOAST ───────────────────────────────────────────────────────────────── */
+    #toast { position:fixed;bottom:28px;right:28px;z-index:999;background:#1a1a1a;border:1px solid var(--border);color:#fff;padding:14px 20px;border-radius:10px;font-size:14px;transform:translateY(80px);opacity:0;transition:all .3s;pointer-events:none;max-width:300px; }
+    #toast.show { transform:translateY(0);opacity:1; }
+
+    @media(max-width:640px){ nav{padding:14px 20px;} .nav-links{display:none;} section{padding:60px 20px;} }
+  </style>
+</head>
+<body>
+
+<!-- ── NAV ──────────────────────────────────────────────────────────────────── -->
+<nav>
+  <div class="nav-logo"><div class="dot"></div>VoiceLayer</div>
+  <div class="nav-links">
+    <a href="#how">How it works</a>
+    <a href="#intelligence">Intelligence</a>
+    <a href="#integrate">Integrate</a>
+    <a href="#features">Features</a>
+  </div>
+  <a href="#waitlist" class="nav-cta">Join waitlist</a>
+</nav>
+
+<!-- ── HERO ─────────────────────────────────────────────────────────────────── -->
+<div class="hero">
+  <div class="hero-badge">🎙 Early Access · Hindi · English · Hinglish</div>
+  <h1>Not just voice nav —<br/><span>voice intelligence</span></h1>
+  <p>
+    Drop one component. VoiceLayer auto-detects your screens, understands context,
+    tracks where the user has been, and resolves "unhe sort karo" — no training, no config files, no action definitions.
+  </p>
+  <form class="hero-form" id="hero-form" onsubmit="submitWaitlist(event,'hero-email')">
+    <input id="hero-email" type="email" placeholder="your@email.com" required />
+    <button type="submit" class="btn-green">Get early access →</button>
+  </form>
+  <p class="hero-sub">Free during beta &nbsp;·&nbsp; No credit card &nbsp;·&nbsp; Ships in weeks</p>
+  <p class="hero-count" id="hero-count"></p>
+</div>
+
+<!-- ── DEMO ──────────────────────────────────────────────────────────────────── -->
+<div class="demo-section">
+  <div class="demo-wrap">
+    <div class="demo-bar">
+      <div class="dr"></div><div class="dy"></div><div class="dg"></div>
+      <div class="url">TiffinManager · Vendor · Shops screen</div>
+    </div>
+    <div class="demo-inner">
+
+      <!-- Phone mockup -->
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="phone-topbar">
+            <span class="phone-title">My Shops</span>
+            <span style="font-size:10px;color:#555">VoiceLayer 🎙</span>
+          </div>
+          <div class="phone-tabs">
+            <div class="phone-tab">Home</div>
+            <div class="phone-tab active">Shops</div>
+            <div class="phone-tab">Meals</div>
+            <div class="phone-tab">Staff</div>
+          </div>
+          <div class="phone-body">
+            <div class="phone-row hi"></div>
+            <div class="phone-row"></div>
+            <div class="phone-row sm"></div>
+            <div style="display:flex;justify-content:center">
+              <div class="phone-fab">🎙</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Multi-turn conversation -->
+      <div class="convo">
+        <div class="convo-title">Live conversation</div>
+
+        <div class="msg">
+          <div class="msg-label">User</div>
+          <div class="bubble user">"mere customers dikhao"</div>
+        </div>
+        <div class="convo-arrow">↓ Claude: user is on Shops, "customers" → CustomersScreen</div>
+        <div class="msg">
+          <div class="msg-label">VoiceLayer</div>
+          <div class="bubble ai">Customers screen khol raha hoon</div>
+          <div class="bubble nav" style="margin-top:4px">navigate → CustomersScreen</div>
+        </div>
+
+        <div class="msg" style="margin-top:8px">
+          <div class="msg-label">User</div>
+          <div class="bubble user">"unhe naam se sort karo"</div>
+        </div>
+        <div class="convo-arrow">↓ "unhe" resolved via conversation history → customers</div>
+        <div class="msg">
+          <div class="msg-label">VoiceLayer</div>
+          <div class="bubble ai">Naam se sort kar raha hoon</div>
+          <div class="bubble nav" style="margin-top:4px">navigate → CustomersScreen · params: {sort:"name"}</div>
+        </div>
+
+        <div class="msg" style="margin-top:8px">
+          <div class="msg-label">User</div>
+          <div class="bubble user">"wapas jaao"</div>
+        </div>
+        <div class="msg">
+          <div class="msg-label">VoiceLayer</div>
+          <div class="bubble nav">navigationRef.goBack() → Shops</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ── HOW IT WORKS ──────────────────────────────────────────────────────────── -->
+<section id="how">
+  <div class="container">
+    <div class="section-label">How it works</div>
+    <h2 class="section-title">Zero config. Full intelligence.</h2>
+    <p class="section-sub">You add one component. VoiceLayer figures out everything else.</p>
+    <div class="steps-grid">
+      <div class="step-card">
+        <span class="num">01</span>
+        <h3>SDK reads your navigation</h3>
+        <p>VoiceLayer scans React Navigation state (or the DOM for web) to discover every screen automatically — no action definitions needed.</p>
+      </div>
+      <div class="step-card">
+        <span class="num">02</span>
+        <h3>Claude maps speech → screen</h3>
+        <p>Your screen names go to Claude. It maps "customers dikhao", "order 1234 dikhao", or "wapas jaao" to the right destination using its own language understanding.</p>
+      </div>
+      <div class="step-card">
+        <span class="num">03</span>
+        <h3>Navigate with full context</h3>
+        <p>VoiceLayer knows where the user is, where they've been, and what they just said. Navigation carries params. Pronouns resolve. Multi-turn just works.</p>
+      </div>
+      <div class="step-card">
+        <span class="num">04</span>
+        <h3>Opt in for deeper intelligence</h3>
+        <p>Add <code>useVoiceLayerScreen</code> to any screen for richer context. One hook, 3-5 hint phrases — chips and intent get dramatically smarter on that screen.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── INTELLIGENCE LAYERS ───────────────────────────────────────────────────── -->
+<section id="intelligence" style="background:var(--bg2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);">
+  <div class="container">
+    <div class="section-label">Intelligence layers</div>
+    <h2 class="section-title">7 layers. All automatic.</h2>
+    <p class="section-sub">Each layer adds a dimension of understanding. Most are zero-config. One is optional for developers who want fine-grained control.</p>
+
+    <div class="intel-grid">
+
+      <!-- 1 -->
+      <div class="intel-card">
+        <div class="intel-badge badge-auto">Automatic</div>
+        <div class="intel-head">
+          <div class="intel-num">1</div>
+          <h3>Screen auto-discovery</h3>
+        </div>
+        <p>Reads React Navigation state on every command to find all reachable screens. Tab screens appear immediately. Stack screens appear after first visit.</p>
+        <div class="intel-example">
+          <span class="dim">// SDK reads navigation state →</span><br/>
+          <span class="hl">Home</span>, <span class="hl">Shops</span>, <span class="hl">Staff</span>, <span class="hl">Meals</span><br/>
+          <span class="dim">// No config needed</span>
+        </div>
+      </div>
+
+      <!-- 2 -->
+      <div class="intel-card">
+        <div class="intel-badge badge-auto">Automatic</div>
+        <div class="intel-head">
+          <div class="intel-num">2</div>
+          <h3>Current screen context</h3>
+        </div>
+        <p>Claude always knows which screen the user is on. "Add karo" on Shops means create a shop. On Customers, it means add a customer. No ambiguity.</p>
+        <div class="intel-example">
+          <span class="dim">Current screen: </span><span class="hl">ShopsScreen</span><span class="dim"> ← user is here</span><br/>
+          <span class="dim">User: "add karo"</span><br/>
+          <span class="dim">→ </span><span class="hl">CreateNewShopScreen</span>
+        </div>
+      </div>
+
+      <!-- 3 -->
+      <div class="intel-card">
+        <div class="intel-badge badge-optional">Optional hint</div>
+        <div class="intel-head">
+          <div class="intel-num">3</div>
+          <h3>Param annotations</h3>
+        </div>
+        <p>Annotate screen names with the params they accept. VoiceLayer extracts values from the transcript and navigates with the right params automatically.</p>
+        <div class="intel-example">
+          <span class="hl">screenNames</span>={[<span class="str">'OrderScreen:orderId'</span>]}<br/><br/>
+          <span class="dim">User: "order 1234 dikhao"</span><br/>
+          <span class="dim">→ navigate(OrderScreen, </span><span class="hl">{ orderId: '1234' }</span><span class="dim">)</span>
+        </div>
+      </div>
+
+      <!-- 4 -->
+      <div class="intel-card">
+        <div class="intel-badge badge-auto">Automatic</div>
+        <div class="intel-head">
+          <div class="intel-num">4</div>
+          <h3>Context-aware chips</h3>
+        </div>
+        <p>Quick-action chips change based on where the user is. On Shops: sibling tabs. On a screen with registered hints: those hints appear first. Always relevant, never stale.</p>
+        <div class="intel-example">
+          <span class="dim">On ShopsScreen →</span><br/>
+          <span class="hl">[Add Shop]</span> <span class="hl">[Search]</span> <span class="hl">[Home]</span><br/>
+          <span class="dim">On Dashboard →</span><br/>
+          <span class="hl">[Customers]</span> <span class="hl">[Earnings]</span> <span class="hl">[Staff]</span>
+        </div>
+      </div>
+
+      <!-- 5 -->
+      <div class="intel-card">
+        <div class="intel-badge badge-auto">Automatic</div>
+        <div class="intel-head">
+          <div class="intel-num">5</div>
+          <h3>Navigation history</h3>
+        </div>
+        <p>VoiceLayer tracks every screen transition. "Wapas jaao", "go back", "pehle wali screen" all work naturally. Claude also sees the breadcrumb trail for richer context.</p>
+        <div class="intel-example">
+          <span class="dim">Path: Dashboard → Shops → Customers</span><br/>
+          <span class="dim">User: </span><span class="hl">"wapas jaao"</span><br/>
+          <span class="dim">→ navigationRef.</span><span class="hl">goBack()</span>
+        </div>
+      </div>
+
+      <!-- 6 -->
+      <div class="intel-card">
+        <div class="intel-badge badge-optional">Optional</div>
+        <div class="intel-head">
+          <div class="intel-num">6</div>
+          <h3>Screen hints &amp; elements</h3>
+        </div>
+        <p>One hook, one array. Call <code>useVoiceLayerScreen</code> in any screen to tell VoiceLayer what it can do and what's visible. Chips become specific. Intent becomes precise.</p>
+        <div class="intel-example">
+          <span class="fn">useVoiceLayerScreen</span>({<br/>
+          &nbsp;&nbsp;hints: [<span class="str">'add shop'</span>, <span class="str">'search'</span>],<br/>
+          &nbsp;&nbsp;elements: [<span class="str">'Shop list: 3'</span>]<br/>
+          })
+        </div>
+      </div>
+
+      <!-- 7 -->
+      <div class="intel-card">
+        <div class="intel-badge badge-auto">Automatic</div>
+        <div class="intel-head">
+          <div class="intel-num">7</div>
+          <h3>Multi-turn conversation</h3>
+        </div>
+        <p>VoiceLayer keeps a rolling window of the last 3 exchanges. Pronouns resolve across commands. References persist. Users speak naturally, not robotically.</p>
+        <div class="intel-example">
+          <span class="dim">User: "customers dikhao"  → navigates</span><br/>
+          <span class="dim">User: </span><span class="hl">"unhe naam se sort karo"</span><br/>
+          <span class="dim">"unhe" = customers (from history)</span><br/>
+          <span class="dim">→ CustomerScreen, </span><span class="hl">sort: 'name'</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ── INTEGRATION ───────────────────────────────────────────────────────────── -->
+<section id="integrate">
+  <div class="container">
+    <div class="section-label">Integration</div>
+    <h2 class="section-title">Ship voice in minutes</h2>
+    <p class="section-sub">Choose your platform. Copy the code. Done.</p>
+
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('web')">🌐 Web</button>
+      <button class="tab" onclick="switchTab('rn')">📱 React Native</button>
+    </div>
+
+    <!-- WEB TAB ──────────────────────────────────────────────────────────────── -->
+    <div class="tab-content active" id="tab-web">
+      <div class="step-list">
+
+        <div class="step-item">
+          <div class="step-badge">1</div>
+          <div class="step-body">
+            <h4>Drop one script tag before <code>&lt;/body&gt;</code></h4>
+            <p>VoiceLayer scans the DOM, detects navigation and interactive elements, and adds a floating mic button. Nothing else needed.</p>
+          </div>
+        </div>
+        <div class="code-wrap">
+          <div class="code-header"><span>index.html</span><button class="copy-btn" onclick="copy(this,'cw1')">Copy</button></div>
+          <pre id="cw1"><span class="cmt">&lt;!-- Option A: Direct (key in browser) --&gt;</span>
+<span class="tag">&lt;script</span>
+  <span class="attr">src</span>=<span class="val">"https://unpkg.com/voicelayer-sdk/dist/voicelayer.iife.js"</span>
+  <span class="attr">data-anthropic-key</span>=<span class="val">"sk-ant-YOUR_KEY"</span>
+  <span class="attr">data-language</span>=<span class="val">"hi"</span>
+<span class="tag">&gt;&lt;/script&gt;</span>
+
+<span class="cmt">&lt;!-- Option B: Server proxy (recommended for production) --&gt;</span>
+<span class="tag">&lt;script</span>
+  <span class="attr">src</span>=<span class="val">"https://unpkg.com/voicelayer-sdk/dist/voicelayer.iife.js"</span>
+  <span class="attr">data-proxy-url</span>=<span class="val">"https://your-server.com/proxy"</span>
+  <span class="attr">data-language</span>=<span class="val">"hi"</span>
+<span class="tag">&gt;&lt;/script&gt;</span></pre>
+        </div>
+
+        <div class="step-item">
+          <div class="step-badge">2</div>
+          <div class="step-body">
+            <h4>Or install via npm (React, Vue, Next.js…)</h4>
+            <p>Import and call <code>init()</code> once. VoiceLayer auto-scans the DOM on every route change.</p>
+          </div>
+        </div>
+        <div class="code-wrap">
+          <div class="code-header"><span>terminal</span><button class="copy-btn" onclick="copy(this,'cw2')">Copy</button></div>
+          <pre id="cw2"><span class="fn">npm</span> install voicelayer-sdk</pre>
+        </div>
+        <div class="code-wrap">
+          <div class="code-header"><span>app.js</span><button class="copy-btn" onclick="copy(this,'cw3')">Copy</button></div>
+          <pre id="cw3"><span class="kw">import</span> { VoiceLayer } <span class="kw">from</span> <span class="str">'voicelayer-sdk'</span>
+
+VoiceLayer.<span class="fn">init</span>({
+  proxyUrl: <span class="str">'https://your-server.com/proxy'</span>,
+  language: <span class="str">'hi'</span>,   <span class="cmt">// 'hi' | 'en' | 'auto'</span>
+  appId:    <span class="str">'my-app'</span>,
+})</pre>
+        </div>
+
+        <div class="step-item">
+          <div class="step-badge">✦</div>
+          <div class="step-body">
+            <h4>Run the proxy server — API keys stay off the browser</h4>
+            <p>Deploy our open-source analytics server. Unlocks the founder dashboard, usage analytics, and keeps your Anthropic key server-side.</p>
+          </div>
+        </div>
+        <div class="code-wrap">
+          <div class="code-header"><span>terminal</span><button class="copy-btn" onclick="copy(this,'cw4')">Copy</button></div>
+          <pre id="cw4"><span class="fn">npx</span> voicelayer-server   <span class="cmt"># starts on :3001</span>
+<span class="cmt"># Set ANTHROPIC_API_KEY in .env — done.</span></pre>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- RN TAB ───────────────────────────────────────────────────────────────── -->
+    <div class="tab-content" id="tab-rn">
+      <div class="step-list">
+
+        <div class="step-item">
+          <div class="step-badge">0</div>
+          <div class="step-body">
+            <h4>Get your API key</h4>
+            <p>Join the waitlist — we'll send you a <code>vl-xxx</code> key. No Anthropic account needed. Intelligence runs on our hosted server at <code>api.voicelayer.dev</code>.</p>
+          </div>
+        </div>
+
+        <div class="step-item">
+          <div class="step-badge">1</div>
+          <div class="step-body">
+            <h4>Install the package</h4>
+            <p>One peer dependency: <code>@react-navigation/native</code> — you almost certainly have this already. No native modules to link.</p>
+          </div>
+        </div>
+        <div class="code-wrap">
+          <div class="code-header"><span>terminal</span><button class="copy-btn" onclick="copy(this,'cr0')">Copy</button></div>
+          <pre id="cr0"><span class="fn">npm</span> install voicelayer-rn</pre>
+        </div>
+
+        <div class="step-item">
+          <div class="step-badge">2</div>
+          <div class="step-body">
+            <h4>Export a navigation ref — two lines you may already have</h4>
+            <p>VoiceLayer uses this to read navigation state and navigate programmatically.</p>
+          </div>
+        </div>
+        <div class="code-wrap">
+          <div class="code-header"><span>src/navigation/navigationRef.js</span><button class="copy-btn" onclick="copy(this,'cr1')">Copy</button></div>
+          <pre id="cr1"><span class="kw">import</span> { createNavigationContainerRef } <span class="kw">from</span> <span class="str">'@react-navigation/native'</span>
+<span class="kw">export const</span> navigationRef = <span class="fn">createNavigationContainerRef</span>()</pre>
+        </div>
+
+        <div class="step-item">
+          <div class="step-badge">3</div>
+          <div class="step-body">
+            <h4>Drop one component. That's the entire integration.</h4>
+            <p>VoiceLayer auto-discovers every screen, builds context-aware chips, tracks navigation history, and handles all routing. Your app code is completely untouched.</p>
+          </div>
+        </div>
+        <div class="code-wrap">
+          <div class="code-header"><span>AppNavigator.js</span><button class="copy-btn" onclick="copy(this,'cr2')">Copy</button></div>
+          <pre id="cr2"><span class="kw">import</span> { VoiceLayerButton } <span class="kw">from</span> <span class="str">'voicelayer-rn'</span>
+<span class="kw">import</span> { navigationRef }   <span class="kw">from</span> <span class="str">'./navigationRef'</span>
+
+<span class="kw">export default function</span> <span class="fn">AppNavigator</span>() {
+  <span class="kw">return</span> (
+    <span class="tag">&lt;NavigationContainer</span> <span class="attr">ref</span>={navigationRef}<span class="tag">&gt;</span>
+      {<span class="cmt">/* your existing navigators — completely untouched */</span>}
+
+      <span class="tag">&lt;VoiceLayerButton</span>
+        <span class="attr">navigationRef</span>={navigationRef}
+        <span class="attr">apiKey</span>=<span class="str">"vl-your-key-here"</span>
+      <span class="tag">/&gt;</span>
+    <span class="tag">&lt;/NavigationContainer&gt;</span>
+  )
+}</pre>
+        </div>
+
+        <div class="step-item">
+          <div class="step-badge">✦</div>
+          <div class="step-body">
+            <h4>Have push-only or parameterised screens?</h4>
+            <p>Stack screens not yet visited won't be in nav state. Annotate their names once — <code>Screen:param</code> syntax. That's all the config VoiceLayer ever asks for.</p>
+          </div>
+        </div>
+        <div class="code-wrap">
+          <div class="code-header"><span>optional — push screens &amp; deep params</span><button class="copy-btn" onclick="copy(this,'cr3')">Copy</button></div>
+          <pre id="cr3"><span class="tag">&lt;VoiceLayerButton</span>
+  <span class="attr">navigationRef</span>={navigationRef}
+  <span class="attr">apiKey</span>=<span class="str">"vl-your-key-here"</span>
+  <span class="attr">screenNames</span>={[
+    <span class="str">'CheckoutScreen'</span>,              <span class="cmt">// push-only, no params</span>
+    <span class="str">'OrderDetailScreen:orderId'</span>,   <span class="cmt">// "order 1234 dikhao" → { orderId:'1234' }</span>
+    <span class="str">'CustomerScreen:customerId'</span>,
+  ]}
+<span class="tag">/&gt;</span></pre>
+        </div>
+
+        <div class="step-item">
+          <div class="step-badge">✦</div>
+          <div class="step-body">
+            <h4>Optional: richer context on a specific screen</h4>
+            <p>Add <code>useVoiceLayerScreen</code> to any screen for smarter chips and intent. Completely optional — the SDK works without it on every screen.</p>
+          </div>
+        </div>
+        <div class="code-wrap">
+          <div class="code-header"><span>screens/ShopsScreen.jsx — optional</span><button class="copy-btn" onclick="copy(this,'cr5')">Copy</button></div>
+          <pre id="cr5"><span class="kw">import</span> { useVoiceLayerScreen } <span class="kw">from</span> <span class="str">'voicelayer-rn'</span>
+
+<span class="kw">export default function</span> <span class="fn">ShopsScreen</span>() {
+  <span class="fn">useVoiceLayerScreen</span>({
+    hints: [<span class="str">'add shop'</span>, <span class="str">'search shops'</span>, <span class="str">'edit shop'</span>],
+  })
+  <span class="cmt">// rest of your screen — unchanged</span>
+}</pre>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ── FEATURES ──────────────────────────────────────────────────────────────── -->
+<section id="features">
+  <div class="container">
+    <div class="section-label">Features</div>
+    <h2 class="section-title">Built for the real world</h2>
+    <p class="section-sub">Everything developers need to ship production voice in India and beyond.</p>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">🇮🇳</div>
+        <h3>Hindi-first</h3>
+        <p>Native support for Hindi, Hinglish, and code-switching mid-sentence. No language config needed — Claude detects it automatically.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🧭</div>
+        <h3>Zero config navigation</h3>
+        <p>Reads React Navigation state or the DOM automatically. No action files, no route definitions, no descriptions to write.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">💬</div>
+        <h3>Multi-turn conversation</h3>
+        <p>"Customers dikhao" then "unhe sort karo" works naturally. Pronouns and references resolve across commands via conversation history.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📍</div>
+        <h3>Context-aware</h3>
+        <p>Knows which screen the user is on, where they've been, and what's visible. "Add karo" means different things on different screens — VoiceLayer gets it right.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">⚡</div>
+        <h3>Sub-600ms intent</h3>
+        <p>SSE streaming exits as soon as Claude closes the JSON object — before the full response completes.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔢</div>
+        <h3>Param extraction</h3>
+        <p>"Order 1234 dikhao" navigates to OrderScreen with <code>orderId: '1234'</code> automatically. Just annotate the screen name once.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔒</div>
+        <h3>Keys stay server-side</h3>
+        <p>The proxy server handles all Anthropic API calls. Your key never touches the browser or device. SDK auth via your own token.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📊</div>
+        <h3>Analytics dashboard</h3>
+        <p>See every command users speak, missed intents, most used routes. Ship what users actually need — not what you guessed.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── WAITLIST ───────────────────────────────────────────────────────────────── -->
+<section class="waitlist-section" id="waitlist">
+  <h2>Be first when<br/><span style="color:var(--green)">we launch</span></h2>
+  <p>Join the waitlist. We'll give you early access and help you integrate personally.</p>
+  <form class="wl-form" onsubmit="submitWaitlist(event,'wl-email')">
+    <input id="wl-email" type="email" placeholder="your@email.com" required />
+    <button type="submit" class="btn-green">Join waitlist →</button>
+  </form>
+  <div id="wl-success">🎉 You're on the list! We'll reach out soon.</div>
+  <p style="margin-top:20px;font-size:13px;color:var(--muted2)">No spam · Unsubscribe anytime</p>
+</section>
+
+<!-- ── FOOTER ────────────────────────────────────────────────────────────────── -->
+<footer>
+  <div class="footer-logo"><div class="dot"></div>VoiceLayer</div>
+  <p>Making every app voice-ready for India &amp; beyond.</p>
+  <p style="font-size:13px;color:var(--muted2)">© 2025 VoiceLayer</p>
+</footer>
+
+<div id="toast"></div>
+
+<script>
+  function switchTab(id) {
+    document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', ['web','rn'][i]===id))
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.toggle('active', c.id==='tab-'+id))
+  }
+
+  function copy(btn, id) {
+    navigator.clipboard.writeText(document.getElementById(id).innerText).then(() => {
+      btn.textContent = 'Copied!'
+      setTimeout(() => btn.textContent = 'Copy', 2000)
+    })
+  }
+
+  function showToast(msg, isError) {
+    const t = document.getElementById('toast')
+    t.textContent = msg
+    t.style.borderColor = isError ? '#ff5252' : '#4ade80'
+    t.classList.add('show')
+    setTimeout(() => t.classList.remove('show'), 4000)
+  }
+
+  async function submitWaitlist(e, inputId) {
+    e.preventDefault()
+    const email = document.getElementById(inputId).value.trim()
+    if (!email) return
+    const btn = e.target.querySelector('button')
+    btn.disabled = true; btn.textContent = 'Adding...'
+    try {
+      const res  = await fetch('/api/waitlist', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({email}) })
+      const data = await res.json()
+      if (res.ok) {
+        document.getElementById('wl-success').style.display = 'block'
+        e.target.style.display = 'none'
+        showToast('🎉 ' + data.message)
+        updateCount()
+      } else {
+        showToast(data.error || 'Something went wrong', true)
+        btn.disabled = false; btn.textContent = 'Join waitlist →'
+      }
+    } catch {
+      document.getElementById('wl-success').style.display = 'block'
+      document.getElementById('wl-success').textContent = '🎉 Got it! Email us at hello@voicelayer.dev to confirm your spot.'
+      e.target.style.display = 'none'
+    }
+  }
+
+  async function updateCount() {
+    try {
+      const res  = await fetch('/api/waitlist')
+      if (!res.ok) return
+      const data = await res.json()
+      const el   = document.getElementById('hero-count')
+      if (el && data.count > 0) el.textContent = `${data.count} developer${data.count===1?'':'s'} already on the list`
+    } catch {}
+  }
+  updateCount()
+</script>
+</body>
+</html>

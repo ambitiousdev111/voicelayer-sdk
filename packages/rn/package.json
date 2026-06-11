@@ -1,0 +1,18 @@
+{
+  "name": "voicelayer-rn",
+  "version": "0.1.0",
+  "description": "Voice intelligence for React Native — Hindi, Hinglish, English. Zero config.",
+  "main": "src/index.js",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/voicelayer/voicelayer-sdk"
+  },
+  "keywords": ["react-native", "voice", "navigation", "hindi", "hinglish", "sdk"],
+  "peerDependencies": {
+    "@react-navigation/native": ">=6.0.0",
+    "react": ">=18.0.0",
+    "react-native": ">=0.70.0"
+  },
+  "files": ["src/"]
+}

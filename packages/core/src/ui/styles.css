@@ -1,0 +1,163 @@
+/*
+ * VoiceLayer UI styles — loaded inside Shadow DOM so they never leak to host.
+ *
+ * Design tokens (override via VoiceLayerConfig.theme):
+ *   --vl-primary:      #6C47FF   (brand purple)
+ *   --vl-bg:           #1A1A2E   (dark overlay background)
+ *   --vl-text:         #F0F0F0
+ *   --vl-radius:       12px
+ *   --vl-btn-size:     64px
+ *   --vl-z-index:      2147483647  (always on top)
+ */
+
+:host {
+  all: initial;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+/* ── Talk Button ── */
+.vl-talk-btn {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: var(--vl-btn-size, 64px);
+  height: var(--vl-btn-size, 64px);
+  border-radius: 50%;
+  background: var(--vl-primary, #6C47FF);
+  border: none;
+  cursor: pointer;
+  z-index: var(--vl-z-index, 2147483647);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 24px rgba(108, 71, 255, 0.4);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.vl-talk-btn:hover {
+  transform: scale(1.08);
+  box-shadow: 0 6px 32px rgba(108, 71, 255, 0.55);
+}
+
+.vl-talk-btn[data-state="listening"] {
+  background: #E53935;
+  animation: vl-pulse 1.2s ease-in-out infinite;
+}
+
+.vl-talk-btn[data-state="processing"] {
+  background: var(--vl-primary, #6C47FF);
+  animation: vl-spin 0.8s linear infinite;
+}
+
+.vl-talk-btn[data-state="speaking"] {
+  background: #00B899;
+}
+
+@keyframes vl-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(229, 57, 53, 0.5); }
+  50%       { box-shadow: 0 0 0 12px rgba(229, 57, 53, 0); }
+}
+
+@keyframes vl-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* ── Voice Overlay ── */
+.vl-overlay {
+  position: fixed;
+  bottom: 104px;
+  right: 24px;
+  width: 360px;
+  max-width: calc(100vw - 48px);
+  background: var(--vl-bg, #1A1A2E);
+  color: var(--vl-text, #F0F0F0);
+  border-radius: var(--vl-radius, 12px);
+  padding: 16px 20px;
+  z-index: var(--vl-z-index, 2147483647);
+  box-shadow: 0 8px 48px rgba(0, 0, 0, 0.4);
+  animation: vl-slide-up 0.2s ease;
+}
+
+.vl-overlay[hidden] { display: none; }
+
+.vl-transcript {
+  font-size: 13px;
+  opacity: 0.6;
+  margin-bottom: 8px;
+  font-style: italic;
+}
+
+.vl-response {
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+@keyframes vl-slide-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Modal context hint (appended below VoiceOverlay response) ── */
+.vl-modal-hint {
+  margin-top: 10px;
+  padding: 8px 10px;
+  background: rgba(108, 71, 255, 0.15);
+  border-left: 2px solid #6C47FF;
+  border-radius: 0 6px 6px 0;
+  font-size: 12px;
+  line-height: 1.4;
+  color: rgba(240, 240, 240, 0.85);
+}
+.vl-modal-hint[hidden] { display: none; }
+
+/* ── Network debug hint ── */
+.vl-network-hint {
+  margin-top: 8px;
+  font-size: 11px;
+  color: rgba(240, 240, 240, 0.45);
+  font-family: monospace;
+  white-space: pre-line;
+  line-height: 1.5;
+}
+.vl-network-hint[hidden] { display: none; }
+
+/* ── AnnouncerBar toast reader (Shadow DOM, top-right) ── */
+.voicelayer-toast-reader {
+  position: fixed;
+  top: 20px;
+  right: 24px;
+  z-index: 100000;
+  background: rgba(15, 15, 15, 0.85);
+  color: white;
+  border-radius: 10px;
+  padding: 10px 16px;
+  font-size: 13px;
+  font-family: system-ui, -apple-system, sans-serif;
+  opacity: 0;
+  transform: translateY(-8px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  pointer-events: none;
+}
+
+.voicelayer-toast-reader--visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── Context badge — floats above the TalkButton ── */
+.voicelayer-context-badge {
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 9px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+  background: #FF6B35;
+  color: white;
+  pointer-events: none;
+  font-weight: 600;
+  line-height: 1.3;
+}
