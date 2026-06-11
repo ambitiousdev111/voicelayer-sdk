@@ -1,16 +1,16 @@
 /**
  * useVoiceIntent — sends voice context to VoiceLayer server and returns navigation intent.
  *
- * Default server: https://api.voicelayer.dev (hosted, no setup needed)
- * Override:       call setVoiceLayerServer('http://192.168.1.5:3001') once in App.js
- *                 for local development or self-hosted deployments.
+ * Default server: https://voicelayer-sdk-production.up.railway.app
+ * Override:       pass serverUrl prop on VoiceLayerButton, or call setVoiceLayerServer()
+ *                 e.g. for local dev: setVoiceLayerServer('http://10.0.2.2:3001')
  */
 
 import { useState, useCallback } from 'react';
 import { conversationStore }     from './conversationStore';
 
 // ── Server URL ─────────────────────────────────────────────────────────────
-let _serverUrl = 'https://api.voicelayer.dev';
+let _serverUrl = 'https://voicelayer-sdk-production.up.railway.app';
 
 /**
  * Override the VoiceLayer server URL.
